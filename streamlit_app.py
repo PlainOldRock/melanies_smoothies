@@ -1,63 +1,63 @@
 # Import python packages
 import streamlit as st
-from snowflake.snowpark.functions import col
-import requests
-import pandas as pd
+from snowflake.snowpark.context import get_active_session
 
-st.title("GITHUB Integration")
-st.write("This was pushed in github and updated the snowflake repo")
+# Write directly to the app
+session = get_active_session()
+
+st.title(":snowflake: Snowflake User Creation :snowflake:",anchor = False)
+st.divider()
+# Get the current credentials
 
 
-# """helpful_links = [
-#     "https://docs.streamlit.io",
-#     "https://docs.snowflake.com/en/developer-guide/streamlit/about-streamlit",
-#     "https://github.com/Snowflake-Labs/snowflake-demo-streamlit",
-#     "https://docs.snowflake.com/en/release-notes/streamlit-in-snowflake"
-# ]
 
-# # Write directly to the app
-# st.title(":cup_with_straw: Customize Your Smoothie! :cup_with_straw:")
-# st.write("Choose the fruits you want in your custom Smoothie!")
-
-# name_on_order = st.text_input('Name on Smoothie:')
-# st.write('The name on your Smoothie will be:', name_on_order)
-
-# cnx = st.connection("snowflake")
-# session = cnx.session()
-# my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'),col('SEARCH_ON'))
-# #st.dataframe(data=my_dataframe, use_container_width=True)
-
-# ingredients_list = st.multiselect(
-#     'Choose up to 5 ingedients:'
-#     , my_dataframe,
-#     max_selections=5
-# )
-
-# pd_df = my_dataframe.to_pandas()
-# #st.dataframe(pd_df)
-# #st.stop()
-
-# if ingredients_list:
-#     ingredients_string = ''
-#     for fruit_chosen in ingredients_list:
-#         ingredients_string += fruit_chosen + ' '
-
-#         search_on=pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
-#         #st.write(f'The search value for {fruit_chosen} is {search_on}.')
-        
-#         st.subheader(fruit_chosen + " Nutrition Information")
-#         smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{search_on}")
-#         sf_df = st.dataframe(data=smoothiefroot_response.json(),use_container_width=True)
-#     #st.write(ingredients_string)
+form1 = st.form("user_form", clear_on_submit = False, enter_to_submit = False, border = True)
+with form1:
     
-#     my_insert_stmt = f"insert into smoothies.public.orders(ingredients,name_on_order) values('{ingredients_string}','{name_on_order}')"
+    user_name = st.text_input("Username")
+    user_password = st.text_input("Password")
+    user_email = st.text_input("Email")
+    user_first = st.text_input("First Name")
+    user_last = st.text_input("Last Name")
+    user_warehouse = st.text_input("Warehouse Name")
+    user_role = st.text_input("Default Role")
+    user_comment = st.text_input("Comment")
+    
+    pass_change = st.checkbox("Must Change Password",value=True)
+    sec_roles = st.checkbox("Secondary Roles",value=True)
 
-#     time_to_insert = st.button("Submit Order")
-#     #st.write(my_insert_stmt)
-#     if time_to_insert:
-#         session.sql(my_insert_stmt).collect()
-#         st.success('Your Smoothie is ordered!', icon="✅")
+    st.divider()
+    send_code = st.checkbox("Execute SQL")
+    
 
-# # New section to display smoothiefroot nutrition information"""
-
-
+    
+    if st.form_submit_button("Generate SQL"):
+        SQL_STR = f"CREATE USER {user_name}\n"
+        if user_password:
+            SQL_STR += f"\tPASSWORD = '{user_password}'\n"
+        if user_email:
+            SQL_STR += f"\tEMAIL = '{user_email}'\n"
+        if user_first:
+            SQL_STR += f"\tFIRST_NAME = '{user_first}'\n"
+        if user_last:
+            SQL_STR += f"\tLAST_NAME = '{user_last}'\n"
+        SQL_STR += f"\tMUST_CHANGE_PASSWORD = {pass_change}\n"
+        if sec_roles:
+            SQL_STR += f"\tDEFAULT_SECONDARY_ROLES = ()\n"
+        if user_comment:
+            SQL_STR += f"\tCOMMENT = '{user_comment}'"
+        if user_warehouse:
+            SQL_STR += f"DEFAULT WAREHOUSE = {user_warehouse}\n"
+        if user_role:
+            SQL_STR += f"DEFAULT ROLE = {user_role}\n"
+        SQL_STR += ';\n'
+        if user_warehouse:
+            SQL_STR += f"GRANT WAREHOUSE {user_warehouse};\n"
+        if user_role:
+            SQL_STR += f"GRANT ROLE {user_role} TO  USER {user_name};"
+        st.code(SQL_STR,language='sql',wrap_lines=True)
+        if send_code == True:
+            #session.sql("USE ROLE SECURITYADMIN;")
+            output = session.sql(f"SELECT 'CREATED USER {user_name.upper()}'").collect()
+            st.write(output)
+        
