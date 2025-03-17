@@ -4,7 +4,9 @@ from snowflake.snowpark.functions import col
 import requests
 import pandas as pd
 
-helpful_links = [
+st.title("GITHUB Integration")
+st.write("This wa sbushed in github and updated the snowflake repo")
+"""helpful_links = [
     "https://docs.streamlit.io",
     "https://docs.snowflake.com/en/developer-guide/streamlit/about-streamlit",
     "https://github.com/Snowflake-Labs/snowflake-demo-streamlit",
@@ -54,6 +56,6 @@ if ingredients_list:
         session.sql(my_insert_stmt).collect()
         st.success('Your Smoothie is ordered!', icon="✅")
 
-# New section to display smoothiefroot nutrition information
+# New section to display smoothiefroot nutrition information"""
 
 
