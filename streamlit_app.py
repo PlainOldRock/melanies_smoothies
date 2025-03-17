@@ -11,7 +11,7 @@ st.divider()
 
 
 
-form1 = st.form("user_form", clear_on_submit = False, enter_to_submit = False, border = True)
+form1 = st.form("user_form", clear_on_submit = False, border = True)
 with form1:
     
     user_name = st.text_input("Username")
